@@ -72,7 +72,7 @@ class PetChain():
 			1: [5,0,0],
 			2: [10,0,0],
 			3: [7,130,1000],
-			4: [1,5,1000],
+			4: [1,1,1000],
 		}
 		self.sellprice = {
 			#查看价格（低于将进一步请求详情）,基础价格
@@ -247,6 +247,7 @@ class PetChain():
 				key = splited[0].strip()
 				value = ":".join(splited[1:]).strip()
 				self.headers[key] = value
+		# print(self.headers)
 
 	def get_market(self):
 		global get_market_time
@@ -364,7 +365,7 @@ class PetChain():
 				# print('request for detail completed')
 			except Exception as e:
 				print( e)
-			print('end requesting for pet detail',round(0-get_market_time+time.time(),2),'s')
+			# print('end requesting for pet detail',round(0-get_market_time+time.time(),2),'s')
 
 			
 			if rareCounts<5:
@@ -396,8 +397,15 @@ class PetChain():
 				maxprice*=3
 
 
-			print(maxvalue,maxprice)
-			if float(pet_amount)>0.7*maxprice:
+
+			if rareCounts<=5:
+				buyratio=0.7
+			elif rareCounts==6:
+				buyratio=0.6
+			else:
+				buyratio=0.15
+			print(maxvalue,maxprice,'buyratio',buyratio,'buyprice:',buyratio*maxprice)
+			if float(pet_amount)>buyratio*maxprice:
 				return
 
 
@@ -421,11 +429,11 @@ class PetChain():
 				return				
 			self.lastValRequest=time.time()
 
-			print('start requesting for validation code',round(0-get_market_time+time.time(),2),'s')
+			# print('start requesting for validation code',round(0-get_market_time+time.time(),2),'s')
 			captcha, seed ,img= self.get_captcha()
 			# time.sleep(5)
 			assert captcha and seed, ValueError("验证码为空")
-			print('end recognizing validation code',round(0-get_market_time+time.time(),2),'s')
+			# print('end recognizing validation code',round(0-get_market_time+time.time(),2),'s')
 
 			jump_data = {
 				"appId": 1,
@@ -651,7 +659,7 @@ class PetChain():
 				resp = page.json()
 				if resp.get(u"errorMsg") == u"success":
 					mypets_onepage = resp.get(u"data").get(u"dataList")
-					if mypets_onepage==[] or page_no>10:
+					if mypets_onepage==[] or page_no>20:
 						break
 					else:
 						mypets+=mypets_onepage
@@ -755,30 +763,30 @@ class PetChain():
 		# if rareCounts==5 :
 		# 	print('五稀',end=' ')
 		# 	canbesold=False
-		if attributes_dict[u'体型']==u'天使' :
-			print('天使',end=' ')			
-			shouldbuy=True
-		else:
-			sellratio*=0.35
+		# if attributes_dict[u'体型']==u'天使' :
+		# 	print('天使',end=' ')			
+		# 	shouldbuy=True
+		# else:
+		# 	sellratio*=0.35
 
-		if attributes_dict[u'眼睛']==u'白眉斗眼':
-			print('白眉斗眼',end=' ')			
-			shouldbuy=True
-		else:
-			sellratio*=0.45
-		if attributes_dict[u'嘴巴']==u'樱桃':
-			print('樱桃',end=' ')			
-			# shouldbuy=True
-		else:
-			sellratio*=0.45				
-		if attributes_dict[u'体型']==u'菠萝头':
-			print('菠萝头',end=' ')	
-			shouldbuy=False			
-		if attributes_dict[u'眼睛']==u'小头晕':
-			print('小头晕',end=' ')	
-			shouldbuy=False				
-		if rareCounts==4:
-			sellratio*=0.5					
+		# if attributes_dict[u'眼睛']==u'白眉斗眼':
+		# 	print('白眉斗眼',end=' ')			
+		# 	shouldbuy=True
+		# else:
+		# 	sellratio*=0.45
+		# if attributes_dict[u'嘴巴']==u'樱桃':
+		# 	print('樱桃',end=' ')			
+		# 	# shouldbuy=True
+		# else:
+		# 	sellratio*=0.45				
+		# if attributes_dict[u'体型']==u'菠萝头':
+		# 	print('菠萝头',end=' ')	
+		# 	shouldbuy=False			
+		# if attributes_dict[u'眼睛']==u'小头晕':
+		# 	print('小头晕',end=' ')	
+		# 	shouldbuy=False				
+		# if rareCounts==4:
+		# 	sellratio*=0.5					
 			
 		print('rareCounts',rareCounts)
 		# print('sellratio',round(sellratio,2))
@@ -878,8 +886,15 @@ class PetChain():
 				maxprice*=6			
 			print(maxvalue,maxprice)
 
-	
-			sellprice_=round(maxprice*1.6*float(random.uniform(1, 1.3)),0)
+			if rareCounts<=5:
+				sellratio=1.5
+			elif rareCounts==6:
+				sellratio=1.3				
+			else:
+				sellratio=1.1
+			
+
+			sellprice_=round(maxprice*sellratio*float(random.uniform(1, 1.3)),0)
 			# print(sellprice_)
 			data = {
 				"petId":petId,
@@ -1125,10 +1140,10 @@ if __name__ == "__main__":
 	# generate_petid_indexing()
 	# os._exit(0)
 	
-	# time.sleep(60*3)
+	time.sleep(60*2)
 
 	pc = PetChain()
-	pc.run()
+	# pc.run()
 	# pc.bat_get_veri_code()
 	while True:
 		t1=time.time()
